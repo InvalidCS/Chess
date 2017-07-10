@@ -16,7 +16,103 @@ BLACK_QUEEN = -5
 BLACK_KING = -6
 BLACK_TURN = -1
 
+class InvalidMoveError(Exception):
+    '''
+    Raise when the user makes an invalid move.
+    '''
+    pass
 
+class GameOverError(Exception):
+    '''
+    Raised when the user wants to make a move from an empty tile.
+    '''
+    pass
+
+
+class GameState:
+    def __init__(self):
+        self._turn = WHITE_TURN
+        self._board = _setup_board()
+        
+    def get_turn(self):
+        return self._turn
+    
+    def get_board(self):
+        return self._board
+    
+    def _switch_turn(self):
+        self._turn = (BLACK_TURN if self._turn == WHITE_TURN else WHITE_TURN)
+        
+    def _find_piece(self, row: int, col: int):
+        num_to_piece = {1: Pawn(), 2: Knight(), 3: Bishop(), 4: Rook(),
+                             5: Queen(), 6: King()}
+        return num_to_piece[abs(self._board[row][col])]
+    
+    def make_move(self, row: int, col: int, new_row: int, new_col: int):
+        row -= 1
+        col -= 1
+        new_row -= 1
+        new_col -= 1
+        
+        if self._board[row][col] == NONE:
+            raise InvalidMoveError()
+        
+        piece = self.find_piece(row, col)
+        if piece.valid_move(self._board, row, col, new_row, new_col, self._turn):
+            self._board[new_row][new_col] = self._board[row][col]
+            self._board[row][col] = NONE
+            self._switch_turn()
+        else:
+            raise InvalidMoveError()
+
+class Pawn:
+    def valid_move(self, board: [[int]], row: int, col: int, new_row: int, new_col: int,
+                   turn: int) -> bool:
+        return (new_row, new_col) in self._all_valid_moves(board, row, col, turn)
+    
+    def _all_valid_moves(self, board: [[int]], row: int, col: int, turn: int ) -> [tuple]:
+        pass
+
+class Knight:
+    def valid_move(self, board: [[int]], row: int, col: int, new_row: int, new_col: int,
+                   turn: int) -> bool:
+        return (new_row, new_col) in self._all_valid_moves(board, row, col, turn)
+    
+    def _all_valid_moves(self, board: [[int]], row: int, col: int, turn: int ) -> [tuple]:
+        pass
+    
+class Bishop:
+    def valid_move(self, board: [[int]], row: int, col: int, new_row: int, new_col: int,
+                   turn: int) -> bool:
+        return (new_row, new_col) in self._all_valid_moves(board, row, col, turn)
+    
+    def _all_valid_moves(self, board: [[int]], row: int, col: int, turn: int ) -> [tuple]:
+        pass
+    
+class Rook:
+    def valid_move(self, board: [[int]], row: int, col: int, new_row: int, new_col: int,
+                   turn: int) -> bool:
+        return (new_row, new_col) in self._all_valid_moves(board, row, col, turn)
+    
+    def _all_valid_moves(self, board: [[int]], row: int, col: int, turn: int ) -> [tuple]:
+        pass
+    
+class Queen:
+    def valid_move(self, board: [[int]], row: int, col: int, new_row: int, new_col: int,
+                   turn: int) -> bool:
+        return (new_row, new_col) in self._all_valid_moves(board, row, col, turn)
+    
+    def _all_valid_moves(self, board: [[int]], row: int, col: int, turn: int ) -> [tuple]:
+        pass
+    
+class King:
+    def valid_move(self, board: [[int]], row: int, col: int, new_row: int, new_col: int,
+                   turn: int) -> bool:
+        return (new_row, new_col) in self._all_valid_moves(board, row, col, turn)
+    
+    def _all_valid_moves(self, board: [[int]], row: int, col: int, turn: int ) -> [tuple]:
+        pass
+    
 def _create_empty_board() -> [[int]]:
     '''
     Creates an empty board with 8 rows and 8 columns.
@@ -67,13 +163,13 @@ def flip_board(board: [[int]]) -> [[int]]:
             flipped_board[row][col] = board[7-row][7-col]
     return flipped_board
 
-def is_valid_row_number(row: int) -> bool:
+def valid_row(row: int) -> bool:
     '''
     Returns True if the row number is between 0 and 7; False otherwise.
     '''
     return 0 <= row < 8
 
-def is_valid_column_number(column: int) -> bool:
+def valid_column(column: int) -> bool:
     '''
     Returns True if the column number is between 0 and 7; False otherwise.
     '''
