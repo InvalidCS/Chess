@@ -21,10 +21,8 @@ def play_chess() -> None:
             gamestate.make_move(start_tile, new_tile)
             board = gamestate.get_board()
             
-            display_board(board)
-            
         except chess_logic.InvalidMoveError:
-            print('Invalid move')
+            print('\nInvalid move')
             
 def valid_tile_format(tile: str) -> bool:
     '''

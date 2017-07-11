@@ -1,3 +1,5 @@
+from piece_movement import Pawn, Knight, Bishop, Rook, Queen, King
+
 NONE = 0
 
 WHITE_PAWN = 1
@@ -31,13 +33,14 @@ class GameOverError(Exception):
 
 
 class GameState:
-    piece_dict = {1: Pawn(), 2: Knight(), 3: Bishop(), 4: Rook(),
+    piece_dict = {1: Pawn(), 2: Bishop(), 3: Knight(), 4: Rook(),
                              5: Queen(), 6: King()}
     tile_dict = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7,
-                 1: 7, 2: 6, 3: 5, 4: 4, 5: 3, 6: 2, 7: 1, 8: 0}
+                 '1': 7, '2': 6, '3': 5, '4': 4, '5': 3, '6': 2, '7': 1, '8': 0}
     def __init__(self):
         self._turn = WHITE_TURN
         self._board = _setup_board()
+        self._history = []
         
     def get_turn(self):
         return self._turn
@@ -60,67 +63,23 @@ class GameState:
         return (GameState.tile_dict[number], GameState.tile_dict[letter])
     
     def make_move(self, start_tile: str, new_tile: str):
+        if start_tile == new_tile:
+            raise InvalidMoveError()
         row, col = self._find_tile(start_tile)
         new_row, new_col = self._find_tile(new_tile)
         
         if self._board[row][col] == NONE:
             raise InvalidMoveError()
         
-        piece = self.find_piece(row, col)
+        piece = self._find_piece(row, col)
         if piece.valid_move(self._board, row, col, new_row, new_col, self._turn):
             self._board[new_row][new_col] = self._board[row][col]
             self._board[row][col] = NONE
+            self._history.append((self._turn, start_tile, new_tile))
             self._switch_turn()
         else:
             raise InvalidMoveError()
 
-class Pawn:
-    def valid_move(self, board: [[int]], row: int, col: int, new_row: int, new_col: int,
-                   turn: int) -> bool:
-        return (new_row, new_col) in self._all_valid_moves(board, row, col, turn)
-    
-    def _all_valid_moves(self, board: [[int]], row: int, col: int, turn: int ) -> [tuple]:
-        pass
-
-class Knight:
-    def valid_move(self, board: [[int]], row: int, col: int, new_row: int, new_col: int,
-                   turn: int) -> bool:
-        return (new_row, new_col) in self._all_valid_moves(board, row, col, turn)
-    
-    def _all_valid_moves(self, board: [[int]], row: int, col: int, turn: int ) -> [tuple]:
-        pass
-    
-class Bishop:
-    def valid_move(self, board: [[int]], row: int, col: int, new_row: int, new_col: int,
-                   turn: int) -> bool:
-        return (new_row, new_col) in self._all_valid_moves(board, row, col, turn)
-    
-    def _all_valid_moves(self, board: [[int]], row: int, col: int, turn: int ) -> [tuple]:
-        pass
-    
-class Rook:
-    def valid_move(self, board: [[int]], row: int, col: int, new_row: int, new_col: int,
-                   turn: int) -> bool:
-        return (new_row, new_col) in self._all_valid_moves(board, row, col, turn)
-    
-    def _all_valid_moves(self, board: [[int]], row: int, col: int, turn: int ) -> [tuple]:
-        pass
-    
-class Queen:
-    def valid_move(self, board: [[int]], row: int, col: int, new_row: int, new_col: int,
-                   turn: int) -> bool:
-        return (new_row, new_col) in self._all_valid_moves(board, row, col, turn)
-    
-    def _all_valid_moves(self, board: [[int]], row: int, col: int, turn: int ) -> [tuple]:
-        pass
-    
-class King:
-    def valid_move(self, board: [[int]], row: int, col: int, new_row: int, new_col: int,
-                   turn: int) -> bool:
-        return (new_row, new_col) in self._all_valid_moves(board, row, col, turn)
-    
-    def _all_valid_moves(self, board: [[int]], row: int, col: int, turn: int ) -> [tuple]:
-        pass
     
 def _create_empty_board() -> [[int]]:
     '''
@@ -171,16 +130,5 @@ def flip_board(board: [[int]]) -> [[int]]:
         for col in range(8):
             flipped_board[row][col] = board[7-row][7-col]
     return flipped_board
-
-
-def valid_row(row: int) -> bool:
-    '''
-    Returns True if the row number is between 0 and 7; False otherwise.
-    '''
-    return 0 <= row < 8
-
-def valid_column(column: int) -> bool:
-    '''
-    Returns True if the column number is between 0 and 7; False otherwise.
-    '''
-    return 0 <= column < 8
+        
+        
