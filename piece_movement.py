@@ -8,19 +8,18 @@ class Pawn:
         self._col = col
         self._color = color
         
-    def find_tile(self):
+    def find_tile(self) -> (int, int):
         return (self._row, self._col)
     
-    def find_color(self):
+    def find_color(self) -> int:
         return self._color
-        
+    
+    def change_position(self, new_row: int, new_col: int) -> int:
+        self._row = new_row
+        self._col = new_col
+    
     def valid_move(self, board: [[int]], new_row: int, new_col: int) -> bool:
-        if (new_row, new_col) in self.all_valid_moves(board):
-            self._row = new_row
-            self._col = new_col
-            return True
-        else:
-            return False
+        return (new_row, new_col) in self.all_valid_moves(board)
 
     def all_valid_moves(self, board: [[int]]) -> [tuple]:
         possible_moves = []
@@ -56,19 +55,18 @@ class Knight:
         self._col = col
         self._color = color
     
-    def find_tile(self):
+    def find_tile(self) -> (int, int):
         return (self._row, self._col)
     
-    def find_color(self):
+    def find_color(self) -> int:
         return self._color
+    
+    def change_position(self, new_row: int, new_col: int):
+        self._row = new_row
+        self._col = new_col
         
     def valid_move(self, board: [[int]], new_row: int, new_col: int) -> bool:
-        if (new_row, new_col) in self.all_valid_moves(board):
-            self._row = new_row
-            self._col = new_col
-            return True
-        else:
-            return False
+        return (new_row, new_col) in self.all_valid_moves(board)
     
     def all_valid_moves(self, board: [[int]]) -> [tuple]:
         possible_moves = []
@@ -94,19 +92,18 @@ class Bishop:
         self._col = col
         self._color = color
     
-    def find_tile(self):
+    def find_tile(self) -> (int, int):
         return (self._row, self._col)
     
-    def find_color(self):
+    def find_color(self) -> int:
         return self._color
+    
+    def change_position(self, new_row: int, new_col: int):
+        self._row = new_row
+        self._col = new_col
         
     def valid_move(self, board: [[int]], new_row: int, new_col: int) -> bool:
-        if (new_row, new_col) in self.all_valid_moves(board):
-            self._row = new_row
-            self._col = new_col
-            return True
-        else:
-            return False
+        return (new_row, new_col) in self.all_valid_moves(board)
     
     def all_valid_moves(self, board: [[int]]) -> [tuple]:
         possible_moves = []
@@ -147,19 +144,18 @@ class Rook:
         self._col = col
         self._color = color
     
-    def find_tile(self):
+    def find_tile(self) -> (int, int):
         return (self._row, self._col)
     
-    def find_color(self):
+    def find_color(self) -> int:
         return self._color
+    
+    def change_position(self, new_row: int, new_col: int):
+        self._row = new_row
+        self._col = new_col
         
     def valid_move(self, board: [[int]], new_row: int, new_col: int) -> bool:
-        if (new_row, new_col) in self.all_valid_moves(board):
-            self._row = new_row
-            self._col = new_col
-            return True
-        else:
-            return False
+        return (new_row, new_col) in self.all_valid_moves(board)
     
     def all_valid_moves(self, board: [[int]]) -> [tuple]:
         possible_moves = []
@@ -203,22 +199,21 @@ class Queen(Bishop, Rook):
         self._col = col
         self._color = color
     
-    def find_tile(self):
+    def find_tile(self) -> (int, int):
         return (self._row, self._col)
     
-    def find_color(self):
+    def find_color(self) -> int:
         return self._color
+    
+    def change_position(self, new_row: int, new_col: int):
+        self._row = new_row
+        self._col = new_col
         
     def valid_move(self, board: [[int]], new_row: int, new_col: int) -> bool:
         Bishop.__init__(self, self._row, self._col, self._color)
         Rook.__init__(self, self._row, self._col, self._color)
-        if (new_row, new_col) in Bishop.all_valid_moves(self, board) or \
-        Rook.all_valid_moves(self, board):
-            self._row = new_row
-            self._col = new_col
-            return True
-        else:
-            return False
+        return (new_row, new_col) in Bishop.all_valid_moves(self, board) or \
+        Rook.all_valid_moves(self, board)
 
 
 class King:
@@ -227,19 +222,18 @@ class King:
         self._col = col
         self._color = color
     
-    def find_tile(self):
+    def find_tile(self) -> (int, int):
         return (self._row, self._col)
     
-    def find_color(self):
+    def find_color(self) -> int:
         return self._color
+    
+    def change_position(self, new_row: int, new_col: int):
+        self._row = new_row
+        self._col = new_col
         
     def valid_move(self, board: [[int]], new_row: int, new_col: int) -> bool:
-        if (new_row, new_col) in self.all_valid_moves(board):
-            self._row = new_row
-            self._col = new_col
-            return True
-        else:
-            return False
+        return (new_row, new_col) in self.all_valid_moves(board)
     
     def all_valid_moves(self, board: [[int]]) -> [tuple]:
         possible_moves = []
@@ -272,3 +266,4 @@ def valid_column(column: int) -> bool:
 
 
     
+

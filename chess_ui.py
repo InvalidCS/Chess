@@ -100,6 +100,3 @@ def display_turn(turn: int) -> None:
         
 if __name__ == '__main__':
     play_chess()
-    
-    
-    
