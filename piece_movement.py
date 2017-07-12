@@ -3,167 +3,259 @@ WHITE_TURN = 1
 BLACK_TURN = -1
 
 class Pawn:
-    def valid_move(self, board: [[int]], row: int, col: int, new_row: int, new_col: int,
-                   turn: int) -> bool:
-        return (new_row, new_col) in self._all_valid_moves(board, row, col, turn)
-    
-    def _all_valid_moves(self, board: [[int]], row: int, col: int, turn: int) -> [tuple]:
-        valid_moves = []
+    def __init__(self, row, col, color):
+        self._row = row
+        self._col = col
+        self._color = color
         
-        if board[row][col] > 0 and turn == WHITE_TURN:
-            if row == 6:
-                if board[5][col] == NONE and board[4][col] == NONE:
-                    valid_moves.append((4, col))
-            if board[row-1][col] == NONE:
-                valid_moves.append((row-1, col))
-            if valid_column(col+1) and board[row-1][col+1] < 0:
-                valid_moves.append((row-1, col+1))
-            if valid_column(col-1) and board[row-1][col-1] < 0:
-                valid_moves.append((row-1, col-1))
-        elif board[row][col] < 0 and turn == BLACK_TURN:
-            if row == 1:
-                if board[2][col] == NONE and board[3][col] == NONE:
-                    valid_moves.append((3, col))
-            if board[row+1][col] == NONE:
-                valid_moves.append((row+1, col))
-            if valid_column(col+1) and board[row+1][col+1] > 0:
-                valid_moves.append((row+1, col+1))
-            if valid_column(col-1) and board[row+1][col-1] > 0:
-                valid_moves.append((row+1, col-1))        
+    def find_tile(self):
+        return (self._row, self._col)
     
-        return valid_moves
+    def find_color(self):
+        return self._color
+        
+    def valid_move(self, board: [[int]], new_row: int, new_col: int) -> bool:
+        if (new_row, new_col) in self.all_valid_moves(board):
+            self._row = new_row
+            self._col = new_col
+            return True
+        else:
+            return False
+
+    def all_valid_moves(self, board: [[int]]) -> [tuple]:
+        possible_moves = []
+        
+        if self._color == 1:
+            if self._row == 6:
+                if board[5][self._col] == NONE and board[4][self._col] == NONE:
+                    possible_moves.append((4, self._col))
+            if board[self._row-1][self._col] == NONE:
+                possible_moves.append((self._row-1, self._col))
+            if valid_column(self._col+1) and board[self._row-1][self._col+1] < 0:
+                possible_moves.append((self._row-1, self._col+1))
+            if valid_column(self._col-1) and board[self._row-1][self._col-1] < 0:
+                possible_moves.append((self._row-1, self._col-1))
+        else:
+            if self._row == 1:
+                if board[2][self._col] == NONE and board[3][self._col] == NONE:
+                    possible_moves.append((3, self._col))
+            if board[self._row+1][self._col] == NONE:
+                possible_moves.append((self._row+1, self._col))
+            if valid_column(self._col+1) and board[self._row+1][self._col+1] > 0:
+                possible_moves.append((self._row+1, self._col+1))
+            if valid_column(self._col-1) and board[self._row+1][self._col-1] > 0:
+                possible_moves.append((self._row+1, self._col-1))        
+    
+        return possible_moves
     
     
     
 class Knight:
-    def valid_move(self, board: [[int]], row: int, col: int, new_row: int, new_col: int,
-                   turn: int) -> bool:
-        return (new_row, new_col) in self._all_valid_moves(board, row, col, turn)
+    def __init__(self, row, col, color):
+        self._row = row
+        self._col = col
+        self._color = color
     
-    def _all_valid_moves(self, board: [[int]], row: int, col: int, turn: int ) -> [tuple]:
-        valid_moves = []
+    def find_tile(self):
+        return (self._row, self._col)
+    
+    def find_color(self):
+        return self._color
+        
+    def valid_move(self, board: [[int]], new_row: int, new_col: int) -> bool:
+        if (new_row, new_col) in self.all_valid_moves(board):
+            self._row = new_row
+            self._col = new_col
+            return True
+        else:
+            return False
+    
+    def all_valid_moves(self, board: [[int]]) -> [tuple]:
+        possible_moves = []
         directions = [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)]
         
-        if board[row][col] > 0 and turn == WHITE_TURN:
+        if self._color == 1:
             for rowdelta, coldelta in directions:
-                if valid_row(row+rowdelta) and valid_column(col+coldelta) and \
-                board[row+rowdelta][col+coldelta] <= 0:
-                    valid_moves.append((row+rowdelta, col+coldelta))
-        elif board[row][col] < 0 and turn == BLACK_TURN:
+                if valid_row(self._row+rowdelta) and valid_column(self._col+coldelta) and \
+                board[self._row+rowdelta][self._col+coldelta] <= 0:
+                    possible_moves.append((self._row+rowdelta, self._col+coldelta))
+        else:
             for rowdelta, coldelta in directions:
-                if valid_row(row+rowdelta) and valid_column(col+coldelta) and \
-                board[row+rowdelta][col+coldelta] >= 0:
-                    valid_moves.append((row+rowdelta, col+coldelta))
-        return valid_moves
+                if valid_row(self._row+rowdelta) and valid_column(self._col+coldelta) and \
+                board[self._row+rowdelta][self._col+coldelta] >= 0:
+                    possible_moves.append((self._row+rowdelta, self._col+coldelta))
+        return possible_moves
     
     
     
 class Bishop:
-    def valid_move(self, board: [[int]], row: int, col: int, new_row: int, new_col: int,
-                   turn: int) -> bool:
-        return (new_row, new_col) in self._all_valid_moves(board, row, col, turn)
+    def __init__(self, row, col, color):
+        self._row = row
+        self._col = col
+        self._color = color
     
-    def _all_valid_moves(self, board: [[int]], row: int, col: int, turn: int ) -> [tuple]:
-        valid_moves = []
+    def find_tile(self):
+        return (self._row, self._col)
+    
+    def find_color(self):
+        return self._color
+        
+    def valid_move(self, board: [[int]], new_row: int, new_col: int) -> bool:
+        if (new_row, new_col) in self.all_valid_moves(board):
+            self._row = new_row
+            self._col = new_col
+            return True
+        else:
+            return False
+    
+    def all_valid_moves(self, board: [[int]]) -> [tuple]:
+        possible_moves = []
         directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
         
-        if board[row][col] > 0 and turn == WHITE_TURN:
+        if self._color == 1:
             for rowdelta, coldelta in directions:
                 for i in range(1, 8):
-                    if valid_row(row+(rowdelta*i)) and valid_column(col+(coldelta*i)) and \
-                    board[row+(rowdelta*i)][col+(coldelta*i)] > 0:
+                    if valid_row(self._row+(rowdelta*i)) and valid_column(self._col+(coldelta*i)) \
+                    and board[self._row+(rowdelta*i)][self._col+(coldelta*i)] > 0:
                         break
-                    elif valid_row(row+(rowdelta*i)) and valid_column(col+(coldelta*i)) and \
-                    board[row+(rowdelta*i)][col+(coldelta*i)] < 0:
-                        valid_moves.append((row+(rowdelta*i), col+(coldelta*i)))
+                    elif valid_row(self._row+(rowdelta*i)) and valid_column(self._col+(coldelta*i)) \
+                    and board[self._row+(rowdelta*i)][self._col+(coldelta*i)] < 0:
+                        possible_moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
                         break
-                    elif valid_row(row+(rowdelta*i)) and valid_column(col+(coldelta*i)) and \
-                    board[row+(rowdelta*i)][col+(coldelta*i)] == NONE:
-                        valid_moves.append((row+(rowdelta*i), col+(coldelta*i)))
-        elif board[row][col] < 0 and turn == BLACK_TURN:
+                    elif valid_row(self._row+(rowdelta*i)) and valid_column(self._col+(coldelta*i)) \
+                    and board[self._row+(rowdelta*i)][self._col+(coldelta*i)] == NONE:
+                        possible_moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
+        else:
             for rowdelta, coldelta in directions:
                 for i in range(1, 8):
-                    if valid_row(row+(rowdelta*i)) and valid_column(col+(coldelta*i)) and \
-                    board[row+(rowdelta*i)][col+(coldelta*i)] < 0:
+                    if valid_row(self._row+(rowdelta*i)) and valid_column(self._col+(coldelta*i)) \
+                    and board[self._row+(rowdelta*i)][self._col+(coldelta*i)] < 0:
                         break
-                    elif valid_row(row+(rowdelta*i)) and valid_column(col+(coldelta*i)) and \
-                    board[row+(rowdelta*i)][col+(coldelta*i)] > 0:
-                        valid_moves.append((row+(rowdelta*i), col+(coldelta*i)))
+                    elif valid_row(self._row+(rowdelta*i)) and valid_column(self._col+(coldelta*i)) \
+                    and board[self._row+(rowdelta*i)][self._col+(coldelta*i)] > 0:
+                        possible_moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
                         break
-                    elif valid_row(row+(rowdelta*i)) and valid_column(col+(coldelta*i)) and \
-                    board[row+(rowdelta*i)][col+(coldelta*i)] == NONE:
-                        valid_moves.append((row+(rowdelta*i), col+(coldelta*i)))
+                    elif valid_row(self._row+(rowdelta*i)) and valid_column(self._col+(coldelta*i)) and \
+                    board[self._row+(rowdelta*i)][self._col+(coldelta*i)] == NONE:
+                        possible_moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
     
-        return valid_moves
+        return possible_moves
     
 class Rook:
-    def valid_move(self, board: [[int]], row: int, col: int, new_row: int, new_col: int,
-                   turn: int) -> bool:
-        return (new_row, new_col) in self._all_valid_moves(board, row, col, turn)
+    def __init__(self, row, col, color):
+        self._row = row
+        self._col = col
+        self._color = color
     
-    def _all_valid_moves(self, board: [[int]], row: int, col: int, turn: int ) -> [tuple]:
-        valid_moves = []
+    def find_tile(self):
+        return (self._row, self._col)
+    
+    def find_color(self):
+        return self._color
+        
+    def valid_move(self, board: [[int]], new_row: int, new_col: int) -> bool:
+        if (new_row, new_col) in self.all_valid_moves(board):
+            self._row = new_row
+            self._col = new_col
+            return True
+        else:
+            return False
+    
+    def all_valid_moves(self, board: [[int]]) -> [tuple]:
+        possible_moves = []
         directions = [(0, -1), (0, 1), (-1, 0), (1, 0)]
         
-        if board[row][col] > 0 and turn == WHITE_TURN:
+        if self._color == 1:
             for rowdelta, coldelta in directions:
                 for i in range(1, 8):
-                    if valid_row(row+(rowdelta*i)) and valid_column(col+(coldelta*i)) and \
-                    board[row+(rowdelta*i)][col+(coldelta*i)] > 0:
+                    if valid_row(self._row+(rowdelta*i)) and valid_column(self._col+(coldelta*i)) \
+                    and board[self._row+(rowdelta*i)][self._col+(coldelta*i)] > 0:
                         break
-                    elif valid_row(row+(rowdelta*i)) and valid_column(col+(coldelta*i)) and \
-                    board[row+(rowdelta*i)][col+(coldelta*i)] < 0:
-                        valid_moves.append((row+(rowdelta*i), col+(coldelta*i)))
+                    elif valid_row(self._row+(rowdelta*i)) and valid_column(self._col+(coldelta*i)) \
+                    and board[self._row+(rowdelta*i)][self._col+(coldelta*i)] < 0:
+                        possible_moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
                         break
-                    elif valid_row(row+(rowdelta*i)) and valid_column(col+(coldelta*i)) and \
-                    board[row+(rowdelta*i)][col+(coldelta*i)] == NONE:
-                        valid_moves.append((row+(rowdelta*i), col+(coldelta*i)))
-        elif board[row][col] < 0 and turn == BLACK_TURN:
+                    elif valid_row(self._row+(rowdelta*i)) and valid_column(self._col+(coldelta*i)) \
+                    and board[self._row+(rowdelta*i)][self._col+(coldelta*i)] == NONE:
+                        possible_moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
+        else:
             for rowdelta, coldelta in directions:
                 for i in range(1, 8):
-                    if valid_row(row+(rowdelta*i)) and valid_column(col+(coldelta*i)) and \
-                    board[row+(rowdelta*i)][col+(coldelta*i)] < 0:
+                    if valid_row(self._row+(rowdelta*i)) and valid_column(self._col+(coldelta*i)) \
+                    and board[self._row+(rowdelta*i)][self._col+(coldelta*i)] < 0:
                         break
-                    elif valid_row(row+(rowdelta*i)) and valid_column(col+(coldelta*i)) and \
-                    board[row+(rowdelta*i)][col+(coldelta*i)] > 0:
-                        valid_moves.append((row+(rowdelta*i), col+(coldelta*i)))
+                    elif valid_row(self._row+(rowdelta*i)) and valid_column(self._col+(coldelta*i)) \
+                    and board[self._row+(rowdelta*i)][self._col+(coldelta*i)] > 0:
+                        possible_moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
                         break
-                    elif valid_row(row+(rowdelta*i)) and valid_column(col+(coldelta*i)) and \
-                    board[row+(rowdelta*i)][col+(coldelta*i)] == NONE:
-                        valid_moves.append((row+(rowdelta*i), col+(coldelta*i)))
+                    elif valid_row(self._row+(rowdelta*i)) and valid_column(self._col+(coldelta*i)) \
+                    and board[self._row+(rowdelta*i)][self._col+(coldelta*i)] == NONE:
+                        possible_moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
     
-        return valid_moves
+        return possible_moves
     
 
 
 
 class Queen(Bishop, Rook):
-    def valid_move(self, board: [[int]], row: int, col: int, new_row: int, new_col: int,
-                   turn: int) -> bool:
-        return Bishop.valid_move(self, board, row, col, new_row, new_col, turn) or \
-            Rook.valid_move(self, board, row, col, new_row, new_col, turn)
+    def __init__(self, row, col, color):
+        self._row = row
+        self._col = col
+        self._color = color
+    
+    def find_tile(self):
+        return (self._row, self._col)
+    
+    def find_color(self):
+        return self._color
+        
+    def valid_move(self, board: [[int]], new_row: int, new_col: int) -> bool:
+        Bishop.__init__(self, self._row, self._col, self._color)
+        Rook.__init__(self, self._row, self._col, self._color)
+        if (new_row, new_col) in Bishop.all_valid_moves(self, board) or \
+        Rook.all_valid_moves(self, board):
+            self._row = new_row
+            self._col = new_col
+            return True
+        else:
+            return False
 
 
 class King:
-    def valid_move(self, board: [[int]], row: int, col: int, new_row: int, new_col: int,
-                   turn: int) -> bool:
-        return (new_row, new_col) in self._all_valid_moves(board, row, col, turn)
+    def __init__(self, row, col, color):
+        self._row = row
+        self._col = col
+        self._color = color
     
-    def _all_valid_moves(self, board: [[int]], row: int, col: int, turn: int ) -> [tuple]:
-        valid_moves = []
+    def find_tile(self):
+        return (self._row, self._col)
+    
+    def find_color(self):
+        return self._color
+        
+    def valid_move(self, board: [[int]], new_row: int, new_col: int) -> bool:
+        if (new_row, new_col) in self.all_valid_moves(board):
+            self._row = new_row
+            self._col = new_col
+            return True
+        else:
+            return False
+    
+    def all_valid_moves(self, board: [[int]]) -> [tuple]:
+        possible_moves = []
         directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
         
-        if board[row][col] > 0 and turn == WHITE_TURN:
+        if self._color == 1:
             for rowdelta, coldelta in directions:
-                if valid_row(row+rowdelta) and valid_column(col+coldelta) and \
-                board[row+rowdelta][col+coldelta] <= 0:
-                    valid_moves.append((row+rowdelta, col+coldelta))
-        elif board[row][col] < 0 and turn == BLACK_TURN:
+                if valid_row(self._row+rowdelta) and valid_column(self._col+coldelta) and \
+                board[self._row+rowdelta][self._col+coldelta] <= 0:
+                    possible_moves.append((self._row+rowdelta, self._col+coldelta))
+        else:
             for rowdelta, coldelta in directions:
-                if valid_row(row+rowdelta) and valid_column(col+coldelta) and \
-                board[row+rowdelta][col+coldelta] >= 0:
-                    valid_moves.append((row+rowdelta, col+coldelta))
-        return valid_moves
+                if valid_row(self._row+rowdelta) and valid_column(self._col+coldelta) and \
+                board[self._row+rowdelta][self._col+coldelta] >= 0:
+                    possible_moves.append((self._row+rowdelta, self._col+coldelta))
+        return possible_moves
     
 def valid_row(row: int) -> bool:
     '''
@@ -177,3 +269,6 @@ def valid_column(column: int) -> bool:
     Returns True if the column number is between 0 and 7; False otherwise.
     '''
     return 0 <= column < 8
+
+
+    

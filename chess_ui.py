@@ -60,7 +60,7 @@ def get_new_tile() -> str:
         if not valid_tile_format(new_tile):
             continue
         else:
-           return new_tile
+            return new_tile
         
 def display_board(board: [[int]], turn: int) -> None:
     '''

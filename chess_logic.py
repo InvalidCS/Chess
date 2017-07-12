@@ -33,14 +33,14 @@ class GameOverError(Exception):
 
 
 class GameState:
-    piece_dict = {1: Pawn(), 2: Bishop(), 3: Knight(), 4: Rook(),
-                             5: Queen(), 6: King()}
     tile_dict = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7,
                  '1': 7, '2': 6, '3': 5, '4': 4, '5': 3, '6': 2, '7': 1, '8': 0}
     def __init__(self):
         self._turn = WHITE_TURN
         self._board = _setup_board()
-        self._history = []
+        self._pieces = construct_pieces(self._board)
+        self._captured_pieces = []
+        self._move_history = []
         
     def get_turn(self):
         return self._turn
@@ -54,8 +54,11 @@ class GameState:
     def _switch_turn(self):
         self._turn = (BLACK_TURN if self._turn == WHITE_TURN else WHITE_TURN)
         
-    def _find_piece(self, row: int, col: int):
-        return GameState.piece_dict[abs(self._board[row][col])]
+    def _find_piece(self, row: int, col: int, turn: int):
+        for piece in self._pieces:
+            if piece.find_tile() == (row, col) and piece.find_color() == turn:
+                return piece
+        raise InvalidMoveError()
     
     def _find_tile(self, tile):
         letter = tile[0]
@@ -71,11 +74,15 @@ class GameState:
         if self._board[row][col] == NONE:
             raise InvalidMoveError()
         
-        piece = self._find_piece(row, col)
-        if piece.valid_move(self._board, row, col, new_row, new_col, self._turn):
+        piece = self._find_piece(row, col, self._turn)
+        if piece.valid_move(self._board, new_row, new_col):
+            if self._board[new_row][new_col] != NONE:
+                captured_piece = self._find_piece(new_row, new_col, self._turn*-1)
+                self._pieces.remove(captured_piece)
+                self._captured_pieces.append(captured_piece)
             self._board[new_row][new_col] = self._board[row][col]
             self._board[row][col] = NONE
-            self._history.append((self._turn, start_tile, new_tile))
+            self._move_history.append((self._turn, start_tile, new_tile))
             self._switch_turn()
         else:
             raise InvalidMoveError()
@@ -86,9 +93,9 @@ def _create_empty_board() -> [[int]]:
     Creates an empty board with 8 rows and 8 columns.
     '''
     board = []
-    for row in range(8):
+    for _ in range(8):
         sublist = []
-        for col in range(8):
+        for _ in range(8):
             sublist.append(NONE)
         board.append(sublist)
     return board
@@ -130,5 +137,15 @@ def flip_board(board: [[int]]) -> [[int]]:
         for col in range(8):
             flipped_board[row][col] = board[7-row][7-col]
     return flipped_board
-        
-        
+
+def construct_pieces(board) -> []:
+    all_pieces = []
+    pieces_dict = {1: Pawn, 2: Bishop, 3: Knight, 4: Rook, 5: Queen, 6: King}
+    for row in range(8):
+        for col in range(8):
+            tile = board[row][col]
+            if tile > 0:
+                all_pieces.append(pieces_dict[tile](row, col, 1))
+            elif board[row][col] < 0:
+                all_pieces.append(pieces_dict[abs(tile)](row, col, -1))      
+    return all_pieces    
