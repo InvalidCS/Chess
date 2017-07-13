@@ -14,38 +14,43 @@ class Pawn:
     def find_color(self) -> int:
         return self._color
     
-    def change_position(self, new_row: int, new_col: int) -> int:
-        self._row = new_row
-        self._col = new_col
+    def valid_move(self, board: [[int]], new_row: int, new_col: int, pieces: []) -> bool:
+        if (new_row, new_col) in self._all_valid_moves(board, pieces):
+            self._row = new_row
+            self._col = new_col
+            return True
+        else:
+            return False
     
-    def valid_move(self, board: [[int]], new_row: int, new_col: int) -> bool:
-        return (new_row, new_col) in self.all_valid_moves(board)
+    def _all_valid_moves(self, board: [[int]], pieces: []) -> [(int, int)]:
+        return _protect_king(board, self._row, self._col, pieces, self.possible_moves(board), self._color)
 
-    def all_valid_moves(self, board: [[int]]) -> [tuple]:
-        possible_moves = []
+    def possible_moves(self, board: [[int]]) -> [(int, int)]:
+        moves = []
         
         if self._color == 1:
             if self._row == 6:
                 if board[5][self._col] == NONE and board[4][self._col] == NONE:
-                    possible_moves.append((4, self._col))
+                    moves.append((4, self._col))
             if board[self._row-1][self._col] == NONE:
-                possible_moves.append((self._row-1, self._col))
+                moves.append((self._row-1, self._col))
             if valid_column(self._col+1) and board[self._row-1][self._col+1] < 0:
-                possible_moves.append((self._row-1, self._col+1))
+                moves.append((self._row-1, self._col+1))
             if valid_column(self._col-1) and board[self._row-1][self._col-1] < 0:
-                possible_moves.append((self._row-1, self._col-1))
+                moves.append((self._row-1, self._col-1))
         else:
             if self._row == 1:
                 if board[2][self._col] == NONE and board[3][self._col] == NONE:
-                    possible_moves.append((3, self._col))
+                    moves.append((3, self._col))
             if board[self._row+1][self._col] == NONE:
-                possible_moves.append((self._row+1, self._col))
+                moves.append((self._row+1, self._col))
             if valid_column(self._col+1) and board[self._row+1][self._col+1] > 0:
-                possible_moves.append((self._row+1, self._col+1))
+                moves.append((self._row+1, self._col+1))
             if valid_column(self._col-1) and board[self._row+1][self._col-1] > 0:
-                possible_moves.append((self._row+1, self._col-1))        
+                moves.append((self._row+1, self._col-1))        
     
-        return possible_moves
+        return moves
+    
     
     
     
@@ -60,29 +65,33 @@ class Knight:
     
     def find_color(self) -> int:
         return self._color
-    
-    def change_position(self, new_row: int, new_col: int):
-        self._row = new_row
-        self._col = new_col
         
-    def valid_move(self, board: [[int]], new_row: int, new_col: int) -> bool:
-        return (new_row, new_col) in self.all_valid_moves(board)
+    def valid_move(self, board: [[int]], new_row: int, new_col: int, pieces: []) -> bool:
+        if (new_row, new_col) in self._all_valid_moves(board, pieces):
+            self._row = new_row
+            self._col = new_col
+            return True
+        else:
+            return False
     
-    def all_valid_moves(self, board: [[int]]) -> [tuple]:
-        possible_moves = []
+    def _all_valid_moves(self, board: [[int]], pieces: []) -> [(int, int)]:
+        return _protect_king(board, self._row, self._col, pieces, self.possible_moves(board), self._color)
+    
+    def possible_moves(self, board: [[int]]) -> [(int, int)]:
+        moves = []
         directions = [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)]
         
         if self._color == 1:
             for rowdelta, coldelta in directions:
                 if valid_row(self._row+rowdelta) and valid_column(self._col+coldelta) and \
                 board[self._row+rowdelta][self._col+coldelta] <= 0:
-                    possible_moves.append((self._row+rowdelta, self._col+coldelta))
+                    moves.append((self._row+rowdelta, self._col+coldelta))
         else:
             for rowdelta, coldelta in directions:
                 if valid_row(self._row+rowdelta) and valid_column(self._col+coldelta) and \
                 board[self._row+rowdelta][self._col+coldelta] >= 0:
-                    possible_moves.append((self._row+rowdelta, self._col+coldelta))
-        return possible_moves
+                    moves.append((self._row+rowdelta, self._col+coldelta))
+        return moves
     
     
     
@@ -97,16 +106,20 @@ class Bishop:
     
     def find_color(self) -> int:
         return self._color
+  
+    def valid_move(self, board: [[int]], new_row: int, new_col: int, pieces: []) -> bool:
+        if (new_row, new_col) in self._all_valid_moves(board, pieces):
+            self._row = new_row
+            self._col = new_col
+            return True
+        else:
+            return False
     
-    def change_position(self, new_row: int, new_col: int):
-        self._row = new_row
-        self._col = new_col
-        
-    def valid_move(self, board: [[int]], new_row: int, new_col: int) -> bool:
-        return (new_row, new_col) in self.all_valid_moves(board)
+    def _all_valid_moves(self, board: [[int]], pieces: []) -> [(int, int)]:
+        return _protect_king(board, self._row, self._col, pieces, self.possible_moves(board), self._color)
     
-    def all_valid_moves(self, board: [[int]]) -> [tuple]:
-        possible_moves = []
+    def possible_moves(self, board: [[int]]) -> [(int, int)]:
+        moves = []
         directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
         
         if self._color == 1:
@@ -117,11 +130,11 @@ class Bishop:
                         break
                     elif valid_row(self._row+(rowdelta*i)) and valid_column(self._col+(coldelta*i)) \
                     and board[self._row+(rowdelta*i)][self._col+(coldelta*i)] < 0:
-                        possible_moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
+                        moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
                         break
                     elif valid_row(self._row+(rowdelta*i)) and valid_column(self._col+(coldelta*i)) \
                     and board[self._row+(rowdelta*i)][self._col+(coldelta*i)] == NONE:
-                        possible_moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
+                        moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
         else:
             for rowdelta, coldelta in directions:
                 for i in range(1, 8):
@@ -130,13 +143,13 @@ class Bishop:
                         break
                     elif valid_row(self._row+(rowdelta*i)) and valid_column(self._col+(coldelta*i)) \
                     and board[self._row+(rowdelta*i)][self._col+(coldelta*i)] > 0:
-                        possible_moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
+                        moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
                         break
                     elif valid_row(self._row+(rowdelta*i)) and valid_column(self._col+(coldelta*i)) and \
                     board[self._row+(rowdelta*i)][self._col+(coldelta*i)] == NONE:
-                        possible_moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
+                        moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
     
-        return possible_moves
+        return moves
     
 class Rook:
     def __init__(self, row, col, color):
@@ -150,15 +163,20 @@ class Rook:
     def find_color(self) -> int:
         return self._color
     
-    def change_position(self, new_row: int, new_col: int):
-        self._row = new_row
-        self._col = new_col
         
-    def valid_move(self, board: [[int]], new_row: int, new_col: int) -> bool:
-        return (new_row, new_col) in self.all_valid_moves(board)
+    def valid_move(self, board: [[int]], new_row: int, new_col: int, pieces: []) -> bool:
+        if (new_row, new_col) in self._all_valid_moves(board, pieces):
+            self._row = new_row
+            self._col = new_col
+            return True
+        else:
+            return False
+        
+    def _all_valid_moves(self, board: [[int]], pieces: []) -> [(int, int)]:
+        return _protect_king(board, self._row, self._col, pieces, self.possible_moves(board), self._color)
     
-    def all_valid_moves(self, board: [[int]]) -> [tuple]:
-        possible_moves = []
+    def possible_moves(self, board: [[int]]) -> [(int, int)]:
+        moves = []
         directions = [(0, -1), (0, 1), (-1, 0), (1, 0)]
         
         if self._color == 1:
@@ -169,11 +187,11 @@ class Rook:
                         break
                     elif valid_row(self._row+(rowdelta*i)) and valid_column(self._col+(coldelta*i)) \
                     and board[self._row+(rowdelta*i)][self._col+(coldelta*i)] < 0:
-                        possible_moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
+                        moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
                         break
                     elif valid_row(self._row+(rowdelta*i)) and valid_column(self._col+(coldelta*i)) \
                     and board[self._row+(rowdelta*i)][self._col+(coldelta*i)] == NONE:
-                        possible_moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
+                        moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
         else:
             for rowdelta, coldelta in directions:
                 for i in range(1, 8):
@@ -182,13 +200,12 @@ class Rook:
                         break
                     elif valid_row(self._row+(rowdelta*i)) and valid_column(self._col+(coldelta*i)) \
                     and board[self._row+(rowdelta*i)][self._col+(coldelta*i)] > 0:
-                        possible_moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
+                        moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
                         break
                     elif valid_row(self._row+(rowdelta*i)) and valid_column(self._col+(coldelta*i)) \
                     and board[self._row+(rowdelta*i)][self._col+(coldelta*i)] == NONE:
-                        possible_moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
-    
-        return possible_moves
+                        moves.append((self._row+(rowdelta*i), self._col+(coldelta*i)))
+        return moves
     
 
 
@@ -198,22 +215,30 @@ class Queen(Bishop, Rook):
         self._row = row
         self._col = col
         self._color = color
-    
+        
     def find_tile(self) -> (int, int):
         return (self._row, self._col)
     
     def find_color(self) -> int:
         return self._color
     
-    def change_position(self, new_row: int, new_col: int):
-        self._row = new_row
-        self._col = new_col
         
-    def valid_move(self, board: [[int]], new_row: int, new_col: int) -> bool:
+    def valid_move(self, board: [[int]], new_row: int, new_col: int, pieces: []) -> bool:
+        
+        if (new_row, new_col) in self._all_valid_moves(board, pieces):
+            self._row = new_row
+            self._col = new_col
+            return True
+        else:
+            return False
+        
+    def _all_valid_moves(self, board: [[int]], pieces: []) -> [(int, int)]:
+        return _protect_king(board, self._row, self._col, pieces, self.possible_moves(board), self._color)
+    
+    def possible_moves(self, board: [[int]]):
         Bishop.__init__(self, self._row, self._col, self._color)
         Rook.__init__(self, self._row, self._col, self._color)
-        return (new_row, new_col) in Bishop.all_valid_moves(self, board) or \
-        Rook.all_valid_moves(self, board)
+        return Bishop.possible_moves(self, board) + Rook.possible_moves(self, board)
 
 
 class King:
@@ -228,28 +253,32 @@ class King:
     def find_color(self) -> int:
         return self._color
     
-    def change_position(self, new_row: int, new_col: int):
-        self._row = new_row
-        self._col = new_col
-        
-    def valid_move(self, board: [[int]], new_row: int, new_col: int) -> bool:
-        return (new_row, new_col) in self.all_valid_moves(board)
+    def valid_move(self, board: [[int]], new_row: int, new_col: int, pieces: []) -> bool:
+        if (new_row, new_col) in self._all_valid_moves(board, pieces):
+            self._row = new_row
+            self._col = new_col
+            return True
+        else:
+            return False
     
-    def all_valid_moves(self, board: [[int]]) -> [tuple]:
-        possible_moves = []
+    def _all_valid_moves(self, board: [[int]], pieces: []) -> [(int, int)]:
+        return _protect_king(board, self._row, self._col, pieces, self.possible_moves(board), self._color)
+    
+    def possible_moves(self, board: [[int]]) -> [(int, int)]:
+        moves = []
         directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
         
         if self._color == 1:
             for rowdelta, coldelta in directions:
                 if valid_row(self._row+rowdelta) and valid_column(self._col+coldelta) and \
                 board[self._row+rowdelta][self._col+coldelta] <= 0:
-                    possible_moves.append((self._row+rowdelta, self._col+coldelta))
+                    moves.append((self._row+rowdelta, self._col+coldelta))
         else:
             for rowdelta, coldelta in directions:
                 if valid_row(self._row+rowdelta) and valid_column(self._col+coldelta) and \
                 board[self._row+rowdelta][self._col+coldelta] >= 0:
-                    possible_moves.append((self._row+rowdelta, self._col+coldelta))
-        return possible_moves
+                    moves.append((self._row+rowdelta, self._col+coldelta))
+        return moves
     
 def valid_row(row: int) -> bool:
     '''
@@ -264,6 +293,29 @@ def valid_column(column: int) -> bool:
     '''
     return 0 <= column < 8
 
+def _find_king(board: [[int]], turn: int) -> (int, int):
+    king = (6 if turn == WHITE_TURN else -6)
+    for row in range(8):
+        for col in range(8):
+            if board[row][col] == king:
+                return (row, col)
+
+def _protect_king(board: [[int]], row: int, col: int, pieces: [], possible_moves: [(int, int)],
+                  turn: int) -> [(int, int)]:
+        opponent_turn = turn*-1
+        valid_moves = possible_moves[:]
+        for new_row, new_col in possible_moves:
+            possible_board = [x[:] for x in board]
+            possible_board[new_row][new_col] = possible_board[row][col]
+            possible_board[row][col] = NONE
+            king_position = _find_king(possible_board, turn)
+            opponent_pieces = [piece for piece in pieces if piece.find_color() == opponent_turn
+                           and piece.find_tile() != (new_row, new_col)]
+            for piece in opponent_pieces:
+                if king_position in piece.possible_moves(possible_board):
+                    valid_moves.remove((new_row, new_col))
+                    break
+        return valid_moves
+
 
     
-

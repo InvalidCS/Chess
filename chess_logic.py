@@ -40,7 +40,7 @@ class GameState:
         self._board = _setup_board()
         self._pieces = construct_pieces(self._board)
         self._captured_pieces = []
-        self._move_history = []
+        self._winner = False
         
     def get_turn(self):
         return self._turn
@@ -51,8 +51,18 @@ class GameState:
         else:
             return flip_board(self._board)
     
+    def _update_board(self, row: int, col: int, new_row, new_col):
+        self._board[new_row][new_col] = self._board[row][col]
+        self._board[row][col] = NONE
+        
     def _switch_turn(self):
         self._turn = (BLACK_TURN if self._turn == WHITE_TURN else WHITE_TURN)
+    
+    def _capture_piece(self, new_row: int, new_col: int):
+        if self._board[new_row][new_col] != NONE:
+            captured_piece = self._find_piece(new_row, new_col, self._turn*-1)
+            self._pieces.remove(captured_piece)
+            self._captured_pieces.append(captured_piece)
         
     def _find_piece(self, row: int, col: int, turn: int):
         for piece in self._pieces:
@@ -68,25 +78,20 @@ class GameState:
     def _check_different_tiles(self, start_tile, new_tile):
         if start_tile == new_tile:
             raise InvalidMoveError()
-        
-    def _check_king_protection(self, row: int, col: int, new_row: int, new_col: int) -> bool:
-        opponent_turn = (BLACK_TURN if self._turn == WHITE_TURN else WHITE_TURN)
-        new_board = [x[:] for x in self._board]
-        new_board[new_row][new_col] = new_board[row][col]
-        new_board[row][col] = NONE
-        king_position =  _find_king(new_board, self._turn)
-        opponent_pieces = [piece for piece in self._pieces if piece.find_color() == opponent_turn
-                           and piece.find_tile() != (new_row, new_col)]
-        for piece in opponent_pieces:
-            if king_position in piece.all_valid_moves(new_board):
-                return False
-        return True
                
-        
     def _check_winner(self):
-        pass
+        opponent_turn = (BLACK_TURN if self._turn == WHITE_TURN else WHITE_TURN)
+        opponent_pieces = [piece for piece in self._pieces if piece.find_color() == opponent_turn]
+        for piece in opponent_pieces: 
+            if piece._all_valid_moves(self._board, self._pieces):
+                return 
+        self._winner = True
+        raise GameOverError()
     
     def make_move(self, start_tile: str, new_tile: str):
+        if self._winner:
+            raise GameOverError()
+        
         self._check_different_tiles(start_tile, new_tile)
         
         row, col = self._find_tile(start_tile)
@@ -96,16 +101,11 @@ class GameState:
             raise InvalidMoveError()
         
         piece = self._find_piece(row, col, self._turn)
-        if piece.valid_move(self._board, new_row, new_col) and \
-        self._check_king_protection(row, col, new_row, new_col):
-            piece.change_position(new_row, new_col)
-            if self._board[new_row][new_col] != NONE:
-                captured_piece = self._find_piece(new_row, new_col, self._turn*-1)
-                self._pieces.remove(captured_piece)
-                self._captured_pieces.append(captured_piece)
-            self._board[new_row][new_col] = self._board[row][col]
-            self._board[row][col] = NONE
-            self._move_history.append((self._turn, start_tile, new_tile))
+        
+        if piece.valid_move(self._board, new_row, new_col, self._pieces):
+            self._capture_piece(new_row, new_col)
+            self._update_board(row, col, new_row, new_col)
+            self._check_winner()
             self._switch_turn()
         else:
             raise InvalidMoveError()

@@ -23,6 +23,9 @@ def play_chess() -> None:
             
         except chess_logic.InvalidMoveError:
             print('\nInvalid move')
+        except chess_logic.GameOverError:
+            display_winner(gamestate.get_board(), gamestate.get_turn())
+            break
             
 def valid_tile_format(tile: str) -> bool:
     '''
@@ -95,8 +98,15 @@ def display_turn(turn: int) -> None:
         print('WHITE\'S TURN')
     else:
         print('BLACK\'S TURN')
+    
+def display_winner(board: [[int]], winner: int):
+    display_board(board, winner)
+    print('WINNER: {}'.format('WHITE' if winner == 1 else 'BLACK'))
         
 
         
 if __name__ == '__main__':
     play_chess()
+    
+    
+    
