@@ -56,29 +56,35 @@ class GameState:
     def get_winner(self) -> int:
         return self._winner
     
-    def _update_board(self, row: int, col: int, new_row, new_col, piece):
+    def promote_pawn(self, row: int, col: int, new_row: int, new_col: int, piece: Pawn):
+        new_piece = input('Promote pawn to (Q, K, B, R): ')
+        piece_to_class = {'B': Bishop, 'K': Knight, 'R': Rook, 'Q': Queen}
+        piece_to_num = {('B', 1): 2, ('B', -1): -2, ('K', 1): 3, ('K', -1): -3,
+                        ('R', 1): 4, ('R', -1): -4, ('Q', 1): 5, ('Q', -1): -5}
+        self._board[row][col] = piece_to_num[(new_piece, self._turn)]
+        self._pieces.remove(piece)
+        add_piece = piece_to_class[new_piece](new_row, new_col, self._turn)
+        self._pieces.append(add_piece)
+        
+    
+    def _update_board(self, row: int, col: int, new_row, new_col, piece: 'Piece'):
         if type(piece) == Pawn and new_col != col and self._board[new_row][new_col] == NONE:
-            self._capture_piece(row, new_col)
             self._board[row][new_col] = NONE
-            
+        
+        self._remove_piece(new_row, new_col)
         self._board[new_row][new_col] = self._board[row][col]
         self._board[row][col] = NONE
-    
-    def _update_history(self, row: int, col:int, new_row: int, new_col: int, piece):
-        captured_piece = self._capture_piece(new_row, new_col)
-        self._history.append((row, col, new_row, new_col, piece, captured_piece))
         
-    def _switch_turn(self):
-        self._turn = (BLACK_TURN if self._turn == WHITE_TURN else WHITE_TURN)
-        
-    def _capture_piece(self, new_row: int, new_col: int):
+    def _remove_piece(self, new_row: int, new_col: int):
         if self._board[new_row][new_col] != NONE:
             captured_piece = self._find_piece(new_row, new_col, self._turn*-1)
             self._pieces.remove(captured_piece)
-            self._captured_pieces.append(captured_piece)
-            return captured_piece
-        else:
-            return NONE
+        
+    def _update_history(self, row: int, col:int, new_row: int, new_col: int, piece: 'Piece'):
+        self._history.append((row, col, new_row, new_col, piece))
+        
+    def _switch_turn(self):
+        self._turn = (BLACK_TURN if self._turn == WHITE_TURN else WHITE_TURN)
         
     def _find_piece(self, row: int, col: int, turn: int):
         for piece in self._pieces:
@@ -125,7 +131,8 @@ class GameState:
         piece = self._find_piece(row, col, self._turn)
         
         if piece.valid_move(self._board, new_row, new_col, self._pieces, self._history):
-            self._capture_piece(new_row, new_col)
+            if type(piece) == Pawn and new_row in [0, 7]:
+                self.promote_pawn(row, col, new_row, new_col, piece)
             self._update_history(row, col, new_row, new_col, piece)
             self._update_board(row, col, new_row, new_col, piece)
             self._check_winner()
