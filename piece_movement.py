@@ -14,18 +14,18 @@ class Pawn:
     def find_color(self) -> int:
         return self._color
     
-    def valid_move(self, board: [[int]], new_row: int, new_col: int, pieces: []) -> bool:
-        if (new_row, new_col) in self._all_valid_moves(board, pieces):
+    def valid_move(self, board: [[int]], new_row: int, new_col: int, pieces: [], history: []) -> bool:
+        if (new_row, new_col) in self._all_valid_moves(board, pieces, history):
             self._row = new_row
             self._col = new_col
             return True
         else:
             return False
     
-    def _all_valid_moves(self, board: [[int]], pieces: []) -> [(int, int)]:
-        return _protect_king(board, self._row, self._col, pieces, self.possible_moves(board), self._color)
+    def _all_valid_moves(self, board: [[int]], pieces: [], history: []) -> [(int, int)]:
+        return _protect_king(board, self._row, self._col, pieces, self.possible_moves(board, history), self._color, history)
 
-    def possible_moves(self, board: [[int]]) -> [(int, int)]:
+    def possible_moves(self, board: [[int]], history: []) -> [(int, int)]:
         moves = []
         
         if self._color == 1:
@@ -38,6 +38,17 @@ class Pawn:
                 moves.append((self._row-1, self._col+1))
             if valid_column(self._col-1) and board[self._row-1][self._col-1] < 0:
                 moves.append((self._row-1, self._col-1))
+            if self._row == 3:
+                if valid_column(self._col-1) and board[3][self._col-1] == -1:
+                    last_move = history[-1]
+                    if (last_move[0], last_move[1], last_move[2], last_move[3]) == \
+                    (1, self._col-1, 3, self._col-1):
+                        moves.append((self._row-1, self._col-1))
+                if valid_column(self._col+1) and board[3][self._col+1] == -1:
+                    last_move = history[-1]
+                    if (last_move[0], last_move[1], last_move[2], last_move[3]) == \
+                    (1, self._col+1, 3, self._col+1):
+                        moves.append((self._row-1, self._col+1))
         else:
             if self._row == 1:
                 if board[2][self._col] == NONE and board[3][self._col] == NONE:
@@ -48,7 +59,17 @@ class Pawn:
                 moves.append((self._row+1, self._col+1))
             if valid_column(self._col-1) and board[self._row+1][self._col-1] > 0:
                 moves.append((self._row+1, self._col-1))        
-    
+            if self._row == 4:
+                if valid_column(self._col-1) and board[4][self._col-1] == 1:
+                    last_move = history[-1]
+                    if (last_move[0], last_move[1], last_move[2], last_move[3]) == \
+                    (6, self._col-1, 4, self._col-1):
+                        moves.append((self._row+1, self._col-1))    
+                if valid_column(self._col+1) and board[4][self._col+1] == 1:
+                    last_move = history[-1]
+                    if (last_move[0], last_move[1], last_move[2], last_move[3]) == \
+                    (6, self._col+1, 4, self._col+1):
+                        moves.append((self._row+1, self._col+1))
         return moves
     
     
@@ -66,18 +87,18 @@ class Knight:
     def find_color(self) -> int:
         return self._color
         
-    def valid_move(self, board: [[int]], new_row: int, new_col: int, pieces: []) -> bool:
-        if (new_row, new_col) in self._all_valid_moves(board, pieces):
+    def valid_move(self, board: [[int]], new_row: int, new_col: int, pieces: [], history: []) -> bool:
+        if (new_row, new_col) in self._all_valid_moves(board, pieces, history):
             self._row = new_row
             self._col = new_col
             return True
         else:
             return False
     
-    def _all_valid_moves(self, board: [[int]], pieces: []) -> [(int, int)]:
-        return _protect_king(board, self._row, self._col, pieces, self.possible_moves(board), self._color)
+    def _all_valid_moves(self, board: [[int]], pieces: [], history: []) -> [(int, int)]:
+        return _protect_king(board, self._row, self._col, pieces, self.possible_moves(board, history), self._color, history)
     
-    def possible_moves(self, board: [[int]]) -> [(int, int)]:
+    def possible_moves(self, board: [[int]], history: []) -> [(int, int)]:
         moves = []
         directions = [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)]
         
@@ -107,18 +128,18 @@ class Bishop:
     def find_color(self) -> int:
         return self._color
   
-    def valid_move(self, board: [[int]], new_row: int, new_col: int, pieces: []) -> bool:
-        if (new_row, new_col) in self._all_valid_moves(board, pieces):
+    def valid_move(self, board: [[int]], new_row: int, new_col: int, pieces: [], history: []) -> bool:
+        if (new_row, new_col) in self._all_valid_moves(board, pieces, history):
             self._row = new_row
             self._col = new_col
             return True
         else:
             return False
     
-    def _all_valid_moves(self, board: [[int]], pieces: []) -> [(int, int)]:
-        return _protect_king(board, self._row, self._col, pieces, self.possible_moves(board), self._color)
+    def _all_valid_moves(self, board: [[int]], pieces: [], history: []) -> [(int, int)]:
+        return _protect_king(board, self._row, self._col, pieces, self.possible_moves(board, history), self._color, history)
     
-    def possible_moves(self, board: [[int]]) -> [(int, int)]:
+    def possible_moves(self, board: [[int]], history: []) -> [(int, int)]:
         moves = []
         directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
         
@@ -164,18 +185,18 @@ class Rook:
         return self._color
     
         
-    def valid_move(self, board: [[int]], new_row: int, new_col: int, pieces: []) -> bool:
-        if (new_row, new_col) in self._all_valid_moves(board, pieces):
+    def valid_move(self, board: [[int]], new_row: int, new_col: int, pieces: [], history: []) -> bool:
+        if (new_row, new_col) in self._all_valid_moves(board, pieces, history):
             self._row = new_row
             self._col = new_col
             return True
         else:
             return False
         
-    def _all_valid_moves(self, board: [[int]], pieces: []) -> [(int, int)]:
-        return _protect_king(board, self._row, self._col, pieces, self.possible_moves(board), self._color)
+    def _all_valid_moves(self, board: [[int]], pieces: [], history: []) -> [(int, int)]:
+        return _protect_king(board, self._row, self._col, pieces, self.possible_moves(board, history), self._color, history)
     
-    def possible_moves(self, board: [[int]]) -> [(int, int)]:
+    def possible_moves(self, board: [[int]], history: []) -> [(int, int)]:
         moves = []
         directions = [(0, -1), (0, 1), (-1, 0), (1, 0)]
         
@@ -223,22 +244,22 @@ class Queen(Bishop, Rook):
         return self._color
     
         
-    def valid_move(self, board: [[int]], new_row: int, new_col: int, pieces: []) -> bool:
+    def valid_move(self, board: [[int]], new_row: int, new_col: int, pieces: [], history: []) -> bool:
         
-        if (new_row, new_col) in self._all_valid_moves(board, pieces):
+        if (new_row, new_col) in self._all_valid_moves(board, pieces, history):
             self._row = new_row
             self._col = new_col
             return True
         else:
             return False
         
-    def _all_valid_moves(self, board: [[int]], pieces: []) -> [(int, int)]:
-        return _protect_king(board, self._row, self._col, pieces, self.possible_moves(board), self._color)
+    def _all_valid_moves(self, board: [[int]], pieces: [], history: []) -> [(int, int)]:
+        return _protect_king(board, self._row, self._col, pieces, self.possible_moves(board, history), self._color, history)
     
-    def possible_moves(self, board: [[int]]):
+    def possible_moves(self, board: [[int]], history: []):
         Bishop.__init__(self, self._row, self._col, self._color)
         Rook.__init__(self, self._row, self._col, self._color)
-        return Bishop.possible_moves(self, board) + Rook.possible_moves(self, board)
+        return Bishop.possible_moves(self, board, history) + Rook.possible_moves(self, board, history)
 
 
 class King:
@@ -253,18 +274,18 @@ class King:
     def find_color(self) -> int:
         return self._color
     
-    def valid_move(self, board: [[int]], new_row: int, new_col: int, pieces: []) -> bool:
-        if (new_row, new_col) in self._all_valid_moves(board, pieces):
+    def valid_move(self, board: [[int]], new_row: int, new_col: int, pieces: [], history: []) -> bool:
+        if (new_row, new_col) in self._all_valid_moves(board, pieces, history):
             self._row = new_row
             self._col = new_col
             return True
         else:
             return False
     
-    def _all_valid_moves(self, board: [[int]], pieces: []) -> [(int, int)]:
-        return _protect_king(board, self._row, self._col, pieces, self.possible_moves(board), self._color)
+    def _all_valid_moves(self, board: [[int]], pieces: [], history: []) -> [(int, int)]:
+        return _protect_king(board, self._row, self._col, pieces, self.possible_moves(board, history), self._color, history)
     
-    def possible_moves(self, board: [[int]]) -> [(int, int)]:
+    def possible_moves(self, board: [[int]], history: []) -> [(int, int)]:
         moves = []
         directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
         
@@ -301,7 +322,7 @@ def _find_king(board: [[int]], turn: int) -> (int, int):
                 return (row, col)
 
 def _protect_king(board: [[int]], row: int, col: int, pieces: [], possible_moves: [(int, int)],
-                  turn: int) -> [(int, int)]:
+                  turn: int, history: int) -> [(int, int)]:
         opponent_turn = turn*-1
         valid_moves = possible_moves[:]
         for new_row, new_col in possible_moves:
@@ -312,10 +333,11 @@ def _protect_king(board: [[int]], row: int, col: int, pieces: [], possible_moves
             opponent_pieces = [piece for piece in pieces if piece.find_color() == opponent_turn
                            and piece.find_tile() != (new_row, new_col)]
             for piece in opponent_pieces:
-                if king_position in piece.possible_moves(possible_board):
+                if king_position in piece.possible_moves(possible_board, history):
                     valid_moves.remove((new_row, new_col))
                     break
         return valid_moves
 
 
     
+
