@@ -1,4 +1,4 @@
-from piece_movement import Pawn, Knight, Bishop, Rook, Queen, King
+from piece_movement import Pawn, Knight, Bishop, Rook, Queen, King, check_exposed_tiles
 
 NONE = 0
 
@@ -121,6 +121,10 @@ class GameState:
     def _check_same_tiles(self, start_tile, new_tile):
         if start_tile == new_tile:
             raise InvalidMoveError()
+        
+    def handle_draw(self):
+        self._winner = NONE
+        raise GameOverError()
     
     def _check_empty_tile(self, row, col):
         if self._board[row][col] == NONE:
@@ -132,16 +136,16 @@ class GameState:
         for piece in opponent_pieces: 
             if piece._all_valid_moves(self._board, self._pieces, self._history):
                 return 
-        self._winner = self._turn
+        king_position = [(row, col) for row in range(8) for col in range(8) if self._board[row][col] == -6*self._turn]
+        if not check_exposed_tiles(self._board, king_position, self._pieces, self._turn, self._history):
+            self._winner = NONE
+        else:
+            self._winner = self._turn
         self._gameover = True
         raise GameOverError()
-    
-    def _check_gameover(self):
-        if self._gameover:
-            raise GameOverError()
+        
     
     def make_move(self, start_tile: str, new_tile: str):
-        self._check_gameover()
         self._check_same_tiles(start_tile, new_tile)
         
         row, col = self._find_tile(start_tile)
@@ -204,6 +208,13 @@ def _setup_board() -> [[int]]:
     
     return board
 
+def setup_tester() -> [[int]]:
+    board = _create_empty_board()
+    board[0][0] = -6
+    board[3][0] = 6
+    board[2][2] = 5
+    return board
+
 def flip_board(board: [[int]]) -> [[int]]:
     '''
     Flips the board to the opposite player's perspective.
@@ -225,6 +236,7 @@ def construct_pieces(board) -> []:
             elif board[row][col] < 0:
                 all_pieces.append(pieces_dict[abs(tile)](row, col, -1))      
     return all_pieces 
+
 
 def _find_king(board: [[int]], turn: int) -> (int, int):
     king = (6 if turn == WHITE_TURN else -6)

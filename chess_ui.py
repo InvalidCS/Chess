@@ -24,7 +24,7 @@ def play_chess() -> None:
         except chess_logic.InvalidMoveError:
             print('\nInvalid move')
         except chess_logic.GameOverError:
-            display_winner(gamestate.get_board(), gamestate.get_turn())
+            display_winner(gamestate.get_board(), gamestate.get_winner())
             break
             
 def valid_tile_format(tile: str) -> bool:
@@ -51,7 +51,7 @@ def get_start_tile() -> str:
         if not valid_tile_format(start_tile):
             continue
         else:
-            return start_tile
+            return start_tile.strip()
 
 def get_new_tile() -> str:
     '''
@@ -63,7 +63,7 @@ def get_new_tile() -> str:
         if not valid_tile_format(new_tile):
             continue
         else:
-            return new_tile
+            return new_tile.strip()
         
 def display_board(board: [[int]], turn: int) -> None:
     '''
@@ -101,7 +101,13 @@ def display_turn(turn: int) -> None:
     
 def display_winner(board: [[int]], winner: int):
     display_board(board, winner)
-    print('WINNER: {}'.format('WHITE' if winner == 1 else 'BLACK'))
+    if winner == 1:
+        winner_str = 'WINNER: WHITE'
+    elif winner == -1:
+        winner_str = 'WINNER: BLACK'
+    else:
+        winner_str = 'DRAW'
+    print(winner_str)
         
 
         
