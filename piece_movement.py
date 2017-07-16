@@ -184,6 +184,10 @@ class Rook:
     def find_color(self) -> int:
         return self._color
     
+    def change_position(self, new_row: int, new_col: int):
+        self._row = new_row
+        self._col = new_col
+    
         
     def valid_move(self, board: [[int]], new_row: int, new_col: int, pieces: [], history: []) -> bool:
         if (new_row, new_col) in self._all_valid_moves(board, pieces, history):
@@ -283,7 +287,34 @@ class King:
             return False
     
     def _all_valid_moves(self, board: [[int]], pieces: [], history: []) -> [(int, int)]:
-        return _protect_king(board, self._row, self._col, pieces, self.possible_moves(board, history), self._color, history)
+        castling_moves = []
+        if self._color == 1:
+            if board[7][4] == 6 and board[7][7] == 4 and board[7][5] == NONE and board[7][6] == NONE:
+                    pieces_moved = [h[4] for h in history]
+                    if not _check_exposed_tiles(board, [(7, 7), (7, 5), (7, 6), (7, 4)], pieces, self._color, history) and \
+                    _find_piece(7, 7, pieces) not in pieces_moved and self not in pieces_moved:
+                        castling_moves.append((7, 6))
+            if board[7][4] == 6 and board[7][0] == 4 and board[7][1] == NONE and board[7][2] == NONE \
+            and board[7][3] == NONE:
+                pieces_moved = [h[4] for h in history]
+                if not _check_exposed_tiles(board, [(7, 0), (7, 1), (7, 2), (7, 3), (7, 4)], pieces, self._color, history) and \
+                _find_piece(7, 0, pieces) not in pieces_moved and self not in pieces_moved:
+                    castling_moves.append((7, 2))
+        else:
+            if board[0][4] == -6 and board[0][7] == -4 and board[0][5] == NONE and board[0][6] == NONE:
+                    pieces_moved = [h[4] for h in history]
+                    if not _check_exposed_tiles(board, [(0, 7), (0, 5), (0, 6), (0, 4)], pieces, self._color, history) and \
+                    _find_piece(0, 7, pieces) not in pieces_moved and self not in pieces_moved:
+                        castling_moves.append((0, 6))
+            if board[0][4] == -6 and board[0][0] == -4 and board[0][1] == NONE and board[0][2] == NONE \
+            and board[0][3] == NONE:
+                pieces_moved = [h[4] for h in history]
+                if not _check_exposed_tiles(board, [(0, 0), (0, 1), (0, 2), (0, 3), (0, 4)], pieces, self._color, history) and \
+                _find_piece(0, 0, pieces) not in pieces_moved and self not in pieces_moved:
+                    castling_moves.append((0, 2))
+            
+        return _protect_king(board, self._row, self._col, pieces, self.possible_moves(board, history), self._color, history) \
+            + castling_moves
     
     def possible_moves(self, board: [[int]], history: []) -> [(int, int)]:
         moves = []
@@ -323,21 +354,33 @@ def _find_king(board: [[int]], turn: int) -> (int, int):
 
 def _protect_king(board: [[int]], row: int, col: int, pieces: [], possible_moves: [(int, int)],
                   turn: int, history: int) -> [(int, int)]:
-        opponent_turn = turn*-1
-        valid_moves = possible_moves[:]
-        for new_row, new_col in possible_moves:
-            possible_board = [x[:] for x in board]
-            possible_board[new_row][new_col] = possible_board[row][col]
-            possible_board[row][col] = NONE
-            king_position = _find_king(possible_board, turn)
-            opponent_pieces = [piece for piece in pieces if piece.find_color() == opponent_turn
+    opponent_turn = turn*-1
+    valid_moves = possible_moves[:]
+    for new_row, new_col in possible_moves:
+        possible_board = [x[:] for x in board]
+        possible_board[new_row][new_col] = possible_board[row][col]
+        possible_board[row][col] = NONE
+        king_position = _find_king(possible_board, turn)
+        opponent_pieces = [piece for piece in pieces if piece.find_color() == opponent_turn
                            and piece.find_tile() != (new_row, new_col)]
-            for piece in opponent_pieces:
-                if king_position in piece.possible_moves(possible_board, history):
-                    valid_moves.remove((new_row, new_col))
-                    break
-        return valid_moves
+        for piece in opponent_pieces:
+            if king_position in piece.possible_moves(possible_board, history):
+                valid_moves.remove((new_row, new_col))
+                break
+    return valid_moves
 
+def _check_exposed_tiles(board: [[int]], tiles: [(int, int)], pieces: [], turn: int, history: []) -> bool:
+    opponent_turn = turn*-1
+    opponent_pieces = [piece for piece in pieces if piece.find_color() == opponent_turn]
+    for row, col in tiles:
+        for piece in opponent_pieces:
+            if (row, col) in piece.possible_moves(board, history):
+                return True
+    return False
+
+def _find_piece(row: int, col: int, pieces: []) -> 'piece' or None:
+    for piece in pieces: 
+        if (row, col) == (piece._row, piece._col):
+            return piece
 
     
-

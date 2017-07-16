@@ -65,8 +65,29 @@ class GameState:
         self._pieces.remove(piece)
         add_piece = piece_to_class[new_piece](new_row, new_col, self._turn)
         self._pieces.append(add_piece)
-        
     
+    def castle_rook(self, new_row: int, new_col: int):
+        if (new_row, new_col) == (7, 6):
+            rook = self._find_piece(7, 7, 1)
+            rook.change_position(7, 5)
+            self._board[7][7] = NONE
+            self._board[7][5] = 4
+        elif (new_row, new_col) == (7, 2):
+            rook = self._find_piece(7, 0, 1)
+            rook.change_position(7, 3)
+            self._board[7][0] = NONE
+            self._board[7][3] = 4
+        elif (new_row, new_col) == (0, 6):
+            rook = self._find_piece(0, 7, -1)
+            rook.change_position(0, 5)
+            self._board[0][7] = NONE
+            self._board[0][5] = -4
+        else:
+            rook = self._find_piece(0, 0, -1)
+            rook.change_position(0, 3)
+            self._board[0][0] = NONE
+            self._board[0][3] = -4
+        
     def _update_board(self, row: int, col: int, new_row, new_col, piece: 'Piece'):
         if type(piece) == Pawn and new_col != col and self._board[new_row][new_col] == NONE:
             self._board[row][new_col] = NONE
@@ -133,6 +154,8 @@ class GameState:
         if piece.valid_move(self._board, new_row, new_col, self._pieces, self._history):
             if type(piece) == Pawn and new_row in [0, 7]:
                 self.promote_pawn(row, col, new_row, new_col, piece)
+            elif type(piece) == King and abs(new_col - col) > 1:
+                self.castle_rook(new_row, new_col)
             self._update_history(row, col, new_row, new_col, piece)
             self._update_board(row, col, new_row, new_col, piece)
             self._check_winner()
