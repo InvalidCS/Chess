@@ -40,9 +40,11 @@ class GameState:
         self._board = _setup_board()
         self._pieces = construct_pieces(self._board)
         self._captured_pieces = []
-        self._history = []
+        self._move_history = []
         self._winner = NONE
         self._gameover = False
+        self._board_history = []
+        self._piece_captured = False
         
     def get_turn(self) -> int:
         return self._turn
@@ -63,8 +65,8 @@ class GameState:
                         ('R', 1): 4, ('R', -1): -4, ('Q', 1): 5, ('Q', -1): -5}
         self._board[row][col] = piece_to_num[(new_piece, self._turn)]
         self._pieces.remove(piece)
-        add_piece = piece_to_class[new_piece](new_row, new_col, self._turn)
-        self._pieces.append(add_piece)
+        piece_to_add = piece_to_class[new_piece](new_row, new_col, self._turn)
+        self._pieces.append(piece_to_add)
     
     def castle_rook(self, new_row: int, new_col: int):
         if (new_row, new_col) == (7, 6):
@@ -91,6 +93,10 @@ class GameState:
     def _update_board(self, row: int, col: int, new_row, new_col, piece: 'Piece'):
         if type(piece) == Pawn and new_col != col and self._board[new_row][new_col] == NONE:
             self._board[row][new_col] = NONE
+        elif type(piece) == Pawn and new_row in [0, 7]:
+            self.promote_pawn(row, col, new_row, new_col, piece)
+        elif type(piece) == King and abs(new_col - col) > 1:
+                self.castle_rook(new_row, new_col)
         
         self._remove_piece(new_row, new_col)
         self._board[new_row][new_col] = self._board[row][col]
@@ -100,10 +106,16 @@ class GameState:
         if self._board[new_row][new_col] != NONE:
             captured_piece = self._find_piece(new_row, new_col, self._turn*-1)
             self._pieces.remove(captured_piece)
+            self._piece_captured = True
+        else:
+            self._piece_captured = False
         
     def _update_history(self, row: int, col:int, new_row: int, new_col: int, piece: 'Piece'):
-        self._history.append((row, col, new_row, new_col, piece))
-        
+        self._move_history.append((row, col, new_row, new_col, piece))
+        if type(piece) == Pawn or self._piece_captured:
+            self._board_history = [[x[:] for x in self._board]]
+        else:
+            self._board_history.append([x[:] for x in self._board])
     def _switch_turn(self):
         self._turn = (BLACK_TURN if self._turn == WHITE_TURN else WHITE_TURN)
         
@@ -133,11 +145,17 @@ class GameState:
     def _check_winner(self):
         opponent_turn = (BLACK_TURN if self._turn == WHITE_TURN else WHITE_TURN)
         opponent_pieces = [piece for piece in self._pieces if piece.find_color() == opponent_turn]
+        
+        if _check_threefold_repetition(self._board_history) or _check_fifty_move_rule(self._board):
+            self._winner = NONE
+            self._gameover = True
+            raise GameOverError
+        
         for piece in opponent_pieces: 
-            if piece._all_valid_moves(self._board, self._pieces, self._history):
+            if piece._all_valid_moves(self._board, self._pieces, self._move_history):
                 return 
         king_position = [(row, col) for row in range(8) for col in range(8) if self._board[row][col] == -6*self._turn]
-        if not check_exposed_tiles(self._board, king_position, self._pieces, self._turn, self._history):
+        if not check_exposed_tiles(self._board, king_position, self._pieces, self._turn, self._move_history):
             self._winner = NONE
         else:
             self._winner = self._turn
@@ -155,13 +173,9 @@ class GameState:
         
         piece = self._find_piece(row, col, self._turn)
         
-        if piece.valid_move(self._board, new_row, new_col, self._pieces, self._history):
-            if type(piece) == Pawn and new_row in [0, 7]:
-                self.promote_pawn(row, col, new_row, new_col, piece)
-            elif type(piece) == King and abs(new_col - col) > 1:
-                self.castle_rook(new_row, new_col)
-            self._update_history(row, col, new_row, new_col, piece)
+        if piece.valid_move(self._board, new_row, new_col, self._pieces, self._move_history):
             self._update_board(row, col, new_row, new_col, piece)
+            self._update_history(row, col, new_row, new_col, piece)
             self._check_winner()
             self._switch_turn()
         else:
@@ -244,3 +258,26 @@ def _find_king(board: [[int]], turn: int) -> (int, int):
         for col in range(8):
             if board[row][col] == king:
                 return (row, col)
+
+def _check_threefold_repetition(board_history: [[[int]]]) -> bool:
+    if len(board_history) < 3:
+        return False
+    elif len(board_history) == 3 and board_history[0] == board_history[1] and board_history[0] == board_history[2]:
+        return True
+    elif board_history[-1] == board_history[-2]:
+        if board_history[-1] == board_history[-3]:
+            return True
+        else:
+            new_board_history = board_history[:]
+            del new_board_history [-3]
+            return _check_threefold_repetition(new_board_history)
+        
+    else:
+        new_board_history = board_history[:]
+        del new_board_history[-2]
+        return _check_threefold_repetition(new_board_history)
+        
+
+def _check_fifty_move_rule(board_history: [[[int]]]) -> bool:
+    return len(board_history) == 100
+
