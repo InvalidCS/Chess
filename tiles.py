@@ -10,6 +10,7 @@ class Tile:
         self.bottomright = bottomright_point
         self.piece = 0
         self.color = 0
+        self.clicked = False
     
     def adjust_color(self):
         if self.piece == 0:
@@ -54,10 +55,15 @@ class Board:
                 print('Col: ' + str(tile.col))
                 print()
                 if not self.start_tile_clicked and turn == tile.color:
+                    tile.clicked = True
+                    self.last_tile_clicked = tile
                     self.start_tile_clicked = True
                     self.row_clicked = (tile.row if turn == 1 else 7 - tile.row)
                     self.column_clicked = (tile.col if turn == 1 else 7 - tile.col)
                 elif self.start_tile_clicked and turn == tile.color:
+                    self.last_tile_clicked.clicked = False
+                    tile.clicked = True
+                    self.last_tile_clicked = tile
                     self.row_clicked = (tile.row if turn == 1 else 7 - tile.row)
                     self.column_clicked = (tile.col if turn == 1 else 7 - tile.col)
                 elif self.start_tile_clicked and turn != tile.color:
@@ -72,9 +78,10 @@ class Board:
             self.gamestate.make_move(row, col, new_row, new_col)
             self.update_tiles()
             self.start_tile_clicked = False
-        except chess_logic.InvalidMoveError():
+            self.last_tile_clicked.clicked = False
+        except chess_logic.InvalidMoveError:
             pass
-        except chess_logic.GameOverError():
+        except chess_logic.GameOverError:
             pass
                 
 

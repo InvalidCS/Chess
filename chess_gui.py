@@ -61,16 +61,26 @@ class ChessApplication:
         for tile in self.board.get_tiles():
             topleft_x, topleft_y = tile.topleft.frac()
             bottomright_x, bottomright_y = tile.bottomright.frac()
-            if (tile.row + tile.col) % 2 == 0:
+            if (tile.row + tile.col) % 2 == 0 and not tile.clicked:
                 self._board_canvas.create_rectangle(
                     topleft_x*canvas_width, topleft_y*canvas_height,
                     bottomright_x*canvas_width, bottomright_y*canvas_height,
                     fill='#eeeed2')
-            else:
+            elif (tile.row + tile.col) % 2 == 0:
+                self._board_canvas.create_rectangle(
+                    topleft_x*canvas_width, topleft_y*canvas_height,
+                    bottomright_x*canvas_width, bottomright_y*canvas_height,
+                    fill='#f3f315')
+            elif (tile.row + tile.col) % 2 != 0 and not tile.clicked:
                 self._board_canvas.create_rectangle(
                     topleft_x*canvas_width, topleft_y*canvas_height,
                     bottomright_x*canvas_width, bottomright_y*canvas_height,
                     fill='#769656')
+            else:
+                self._board_canvas.create_rectangle(
+                    topleft_x*canvas_width, topleft_y*canvas_height,
+                    bottomright_x*canvas_width, bottomright_y*canvas_height,
+                    fill='#ccff00')
             if tile.piece != chess_logic.NONE:
                 if tile.piece == chess_logic.WHITE_PAWN:
                     image = self._W_PAWN_image
