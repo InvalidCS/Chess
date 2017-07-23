@@ -384,4 +384,3 @@ def _find_piece(row: int, col: int, pieces: []) -> 'piece' or None:
             return piece
 
     
-

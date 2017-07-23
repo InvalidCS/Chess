@@ -25,6 +25,24 @@ class InvalidMoveError(Exception):
     '''
     pass
 
+class EmptyTileError(Exception):
+    '''
+    Raise when the user tries to "move" an empty tile.
+    '''
+    pass
+
+class WrongPieceError(Exception):
+    '''
+    Raise when the user tries to move an opposite-colored piece.
+    '''
+    pass
+
+class SamePieceError(Exception):
+    '''
+    Raise when the user tries to move to a tile with its own piece.
+    '''
+    pass
+
 class GameOverError(Exception):
     '''
     Raised when the user wants to make a move from an empty tile.
@@ -33,8 +51,6 @@ class GameOverError(Exception):
 
 
 class GameState:
-    tile_dict = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7,
-                 '1': 7, '2': 6, '3': 5, '4': 4, '5': 3, '6': 2, '7': 1, '8': 0}
     def __init__(self):
         self._turn = WHITE_TURN
         self._board = _setup_board()
@@ -116,6 +132,7 @@ class GameState:
             self._board_history = [[x[:] for x in self._board]]
         else:
             self._board_history.append([x[:] for x in self._board])
+            
     def _switch_turn(self):
         self._turn = (BLACK_TURN if self._turn == WHITE_TURN else WHITE_TURN)
         
@@ -124,23 +141,24 @@ class GameState:
             if piece.find_tile() == (row, col) and piece.find_color() == turn:
                 return piece
         raise InvalidMoveError()
-    
-    def _find_tile(self, tile):
-        letter = tile[0]
-        number = tile[1]
-        return (GameState.tile_dict[number], GameState.tile_dict[letter])
-    
-    def _check_same_tiles(self, start_tile, new_tile):
-        if start_tile == new_tile:
-            raise InvalidMoveError()
+
         
     def handle_draw(self):
         self._winner = NONE
         raise GameOverError()
     
-    def _check_empty_tile(self, row, col):
+    def check_tiles(self, row: int, col: int, new_row: int, new_col: int):
         if self._board[row][col] == NONE:
-            raise InvalidMoveError()
+            raise EmptyTileError()
+        elif self._turn == WHITE_TURN and self._board[row][col] < 0:
+            raise WrongPieceError()
+        elif self._turn == BLACK_TURN and self._board[row][col] > 0:
+            raise WrongPieceError()
+        elif self._turn == WHITE_TURN and self._board[new_row][new_col] > 0:
+            raise SamePieceError()
+        elif self._turn == BLACK_TURN and self._board[new_row][new_col] < 0:
+            raise SamePieceError()
+                                                            
                
     def _check_winner(self):
         opponent_turn = (BLACK_TURN if self._turn == WHITE_TURN else WHITE_TURN)
@@ -163,13 +181,9 @@ class GameState:
         raise GameOverError()
         
     
-    def make_move(self, start_tile: str, new_tile: str):
-        self._check_same_tiles(start_tile, new_tile)
+    def make_move(self, row: int, col: int, new_row: int, new_col: int):
         
-        row, col = self._find_tile(start_tile)
-        new_row, new_col = self._find_tile(new_tile)
-        
-        self._check_empty_tile(row, col)
+        self.check_tiles(row, col, new_row, new_col)
         
         piece = self._find_piece(row, col, self._turn)
         

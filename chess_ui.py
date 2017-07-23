@@ -17,12 +17,20 @@ def play_chess() -> None:
 
         start_tile = get_start_tile()
         new_tile = get_new_tile()
+        row, col = find_tile(start_tile)
+        new_row, new_col = find_tile(new_tile)
         try:
-            gamestate.make_move(start_tile, new_tile)
+            gamestate.make_move(row, col, new_row, new_col)
             board = gamestate.get_board()
             
         except chess_logic.InvalidMoveError:
             print('\nInvalid move')
+        except chess_logic.EmptyTileError:
+            print('\nTile is empty')
+        except chess_logic.WrongPieceError:
+            print('\nCan\'t move opponent\'s piece')
+        except chess_logic.SamePieceError:
+            print('\nCan\'t move to tile with own piece')
         except chess_logic.GameOverError:
             display_winner(gamestate.get_board(), gamestate.get_winner())
             break
@@ -108,6 +116,14 @@ def display_winner(board: [[int]], winner: int):
     else:
         winner_str = 'DRAW'
     print(winner_str)
+
+def find_tile(tile: str) -> (int, int):
+    tile_dict = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7,
+                 '1': 7, '2': 6, '3': 5, '4': 4, '5': 3, '6': 2, '7': 1, '8': 0}
+    letter = tile[0]
+    number = tile[1]
+    
+    return (tile_dict[number], tile_dict[letter])
         
 
         

@@ -11,7 +11,7 @@ class Point:
         Returns an (x, y) tuple that contains the fractional coordinates
         for this object.
         '''
-        return (self.frac_x, self.frac_y)
+        return (self._frac_x, self._frac_y)
     
     def pixel(self, width: int, height: int) -> (int, int):
         '''
@@ -32,4 +32,4 @@ def from_pixel(pixel_x, pixel_y, width, height):
     Builds a Point given pixel x and y coordinates along with the width and height
     of the area (necessary for conversion to fractional).
     '''
-    return Point(pixel_x/height, pixel_y/width)
+    return Point(pixel_x/width, pixel_y/height)
