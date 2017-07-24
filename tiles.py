@@ -1,6 +1,5 @@
 import point
 import chess_logic
-import pawn_promotion
 
 class Tile:
     def __init__(self, row: int, col: int, topleft_point: point.Point, 
@@ -51,6 +50,10 @@ class Board:
         turn = self.gamestate.get_turn()
         for tile in self.tiles:
             if tile.contains(click_point):
+                print('Piece: ' + str(tile.piece))
+                print('Row: ' + str(tile.row))
+                print('Col: ' + str(tile.col))
+                print()
                 if not self.start_tile_clicked and turn == tile.color:
                     tile.clicked = True
                     self.last_tile_clicked = tile
@@ -72,8 +75,7 @@ class Board:
                     
     def make_move(self, row: int, col: int, new_row: int, new_col: int):
         try:
-            new_piece = handle_pawn_promotion(row, col, new_row, new_col, self.gamestate)
-            self.gamestate.make_move(row, col, new_row, new_col, new_piece)
+            self.gamestate.make_move(row, col, new_row, new_col)
             self.update_tiles()
             self.start_tile_clicked = False
             self.last_tile_clicked.clicked = False
@@ -91,24 +93,3 @@ def create_empty_board():
             bottomright_frac = point.from_frac((col+1)/8, (row+1)/8)
             all_tiles.append(Tile(row, col, topleft_frac, bottomright_frac))
     return all_tiles
-
-def handle_pawn_promotion(row: int, col: int, new_row: int, new_col: int,
-                           gamestate: chess_logic.GameState):
-    if row == 1 and gamestate._board[row][col] == chess_logic.WHITE_PAWN:
-        piece = gamestate._find_piece(row, col, gamestate._turn)
-        if (new_row, new_col) in piece._all_valid_moves(gamestate._board, gamestate._pieces, gamestate._move_history):
-            choice_window = pawn_promotion.PawnPromotionChoice(1)
-            choice_window.show()
-            if choice_window.was_clicked():
-                return choice_window.get_piece()
-        
-    elif row == 6 and gamestate._board[row][col] == chess_logic.BLACK_PAWN:
-        piece = gamestate._find_piece(row, col, gamestate._turn)
-        if (new_row, new_col) in piece._all_valid_moves(gamestate._board, gamestate._pieces, gamestate._move_history):
-            choice_window = pawn_promotion.PawnPromotionChoice(-1)
-            choice_window.show()
-            if choice_window.was_clicked():
-                return choice_window.get_piece()
-    else:
-        return None
-    
