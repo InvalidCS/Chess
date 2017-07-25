@@ -58,7 +58,8 @@ class GameState:
         self._captured_pieces = []
         self._move_history = []
         self._winner = NONE
-        self._gameover = False
+        self._win_type = NONE
+        self._game_over = False
         self._board_history = []
         self._piece_captured = False
         
@@ -73,6 +74,12 @@ class GameState:
     
     def get_winner(self) -> int:
         return self._winner
+    
+    def get_win_type(self) -> str:
+        return self._win_type
+    
+    def check_game_over(self) -> bool:
+        return self._game_over
     
     def promote_pawn(self, row: int, col: int, new_row: int, new_col: int, piece: Pawn,
                      new_piece: str):
@@ -166,20 +173,29 @@ class GameState:
         opponent_turn = (BLACK_TURN if self._turn == WHITE_TURN else WHITE_TURN)
         opponent_pieces = [piece for piece in self._pieces if piece.find_color() == opponent_turn]
         
-        if _check_threefold_repetition(self._board_history) or _check_fifty_move_rule(self._board):
+        if _check_threefold_repetition(self._board_history):
             self._winner = NONE
-            self._gameover = True
-            raise GameOverError
+            self._win_type = 'Threefold Repetition'
+            self._game_over = True
+            raise GameOverError()
+        
+        elif _check_fifty_move_rule(self._board_history):
+            self._winner = NONE
+            self._win_type = 'Fifty Move Rule'
+            self._game_over = True
+            raise GameOverError()
         
         for piece in opponent_pieces: 
             if piece._all_valid_moves(self._board, self._pieces, self._move_history):
                 return 
         king_position = [(row, col) for row in range(8) for col in range(8) if self._board[row][col] == -6*self._turn]
-        if not check_exposed_tiles(self._board, king_position, self._pieces, self._turn, self._move_history):
+        if not check_exposed_tiles(self._board, king_position, self._pieces, self._turn*-1, self._move_history):
             self._winner = NONE
+            self._win_type = 'Stalemate'
         else:
             self._winner = self._turn
-        self._gameover = True
+            self._win_type = 'Checkmate'
+        self._game_over = True
         raise GameOverError()
         
     
@@ -295,5 +311,4 @@ def _check_threefold_repetition(board_history: [[[int]]]) -> bool:
 
 def _check_fifty_move_rule(board_history: [[[int]]]) -> bool:
     return len(board_history) == 100
-
 

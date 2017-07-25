@@ -10,6 +10,7 @@ class ChessApplication:
         self._root_window = tkinter.Tk()
         
         self.board = tiles.Board()
+        self._winner_displayed = False
         
         self._board_canvas = tkinter.Canvas(
             master = self._root_window,
@@ -51,6 +52,8 @@ class ChessApplication:
         self.board.handle_move_click(click_point)
         
         self._redraw_board()
+        
+        self._handle_winner()
     
     def _redraw_board(self):
         self._board_canvas.delete(tkinter.ALL)
@@ -113,9 +116,26 @@ class ChessApplication:
                     (bottomright_pixel[0]+topleft_pixel[0])/2, 
                     (bottomright_pixel[1]+topleft_pixel[1])/2,
                     image = image)
+    
+    def _handle_winner(self):
+        if self.board.check_winner() and not self._winner_displayed:
+            self._winner_displayed = True
+            _winner_window = tkinter.Tk()
+            _winner_text = self.board.get_winner() + ' by ' + self.board.get_win_type()
+            _winner_label = tkinter.Label(
+            master = _winner_window,
+            text = _winner_text,
+            font = ('Helvetica', 25))
             
-    
-    
+            _winner_label.grid(
+                row = 0, column = 0, padx = 30, pady = 30,
+                sticky = tkinter.N + tkinter.S + tkinter.E + tkinter.W
+                )
+            
+            _winner_window.rowconfigure(0, weight = 1)
+            _winner_window.columnconfigure(0, weight = 1)
+            _winner_window.mainloop()
+            
         
     def run(self):
         self._root_window.mainloop()

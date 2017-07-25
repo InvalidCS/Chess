@@ -49,6 +49,8 @@ class Board:
                 
     def handle_move_click(self, click_point: point.Point):
         turn = self.gamestate.get_turn()
+        if self.gamestate.check_game_over():
+            return
         for tile in self.tiles:
             if tile.contains(click_point):
                 if not self.start_tile_clicked and turn == tile.color:
@@ -80,7 +82,24 @@ class Board:
         except chess_logic.InvalidMoveError:
             pass
         except chess_logic.GameOverError:
-            pass
+            self.update_tiles()
+            self.last_tile_clicked.clicked = False
+            self._winner = self.gamestate.get_winner()
+            self._win_type = self.gamestate.get_win_type()
+    
+    def check_winner(self) -> bool:
+        return self.gamestate.check_game_over()
+    
+    def get_winner(self) -> str:
+        if self._winner == chess_logic.NONE:
+            return 'Game Drawn'
+        elif self._winner == chess_logic.WHITE_TURN:
+            return 'White Wins'
+        else:
+            return 'Black Wins'
+    
+    def get_win_type(self) -> str:
+        return self._win_type
                 
 
 def create_empty_board():
