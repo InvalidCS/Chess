@@ -291,25 +291,25 @@ class King:
         if self._color == 1:
             if board[7][4] == 6 and board[7][7] == 4 and board[7][5] == NONE and board[7][6] == NONE:
                     pieces_moved = [h[4] for h in history]
-                    if not check_exposed_tiles(board, [(7, 7), (7, 5), (7, 6), (7, 4)], pieces, self._color, history) and \
+                    if not check_exposed_tiles(board, [(7, 5), (7, 6), (7, 4)], pieces, self._color, history) and \
                     _find_piece(7, 7, pieces) not in pieces_moved and self not in pieces_moved:
                         castling_moves.append((7, 6))
             if board[7][4] == 6 and board[7][0] == 4 and board[7][1] == NONE and board[7][2] == NONE \
             and board[7][3] == NONE:
                 pieces_moved = [h[4] for h in history]
-                if not check_exposed_tiles(board, [(7, 0), (7, 1), (7, 2), (7, 3), (7, 4)], pieces, self._color, history) and \
+                if not check_exposed_tiles(board, [(7, 1), (7, 2), (7, 3), (7, 4)], pieces, self._color, history) and \
                 _find_piece(7, 0, pieces) not in pieces_moved and self not in pieces_moved:
                     castling_moves.append((7, 2))
         else:
             if board[0][4] == -6 and board[0][7] == -4 and board[0][5] == NONE and board[0][6] == NONE:
                     pieces_moved = [h[4] for h in history]
-                    if not check_exposed_tiles(board, [(0, 7), (0, 5), (0, 6), (0, 4)], pieces, self._color, history) and \
+                    if not check_exposed_tiles(board, [(0, 5), (0, 6), (0, 4)], pieces, self._color, history) and \
                     _find_piece(0, 7, pieces) not in pieces_moved and self not in pieces_moved:
                         castling_moves.append((0, 6))
             if board[0][4] == -6 and board[0][0] == -4 and board[0][1] == NONE and board[0][2] == NONE \
             and board[0][3] == NONE:
                 pieces_moved = [h[4] for h in history]
-                if not check_exposed_tiles(board, [(0, 0), (0, 1), (0, 2), (0, 3), (0, 4)], pieces, self._color, history) and \
+                if not check_exposed_tiles(board, [(0, 1), (0, 2), (0, 3), (0, 4)], pieces, self._color, history) and \
                 _find_piece(0, 0, pieces) not in pieces_moved and self not in pieces_moved:
                     castling_moves.append((0, 2))
             
@@ -384,3 +384,4 @@ def _find_piece(row: int, col: int, pieces: []) -> 'piece' or None:
             return piece
 
     
+
